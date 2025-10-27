@@ -1,0 +1,158 @@
+Under the terms of the Apache 2.0 license, please see details of the changes made from the file poly5reader.py (created by TMSi) to TMSiSDK_Poly5Reader.py.
+
+Changes made by Nhan Duc Thanh Nguyen:
+
+commit 3b471cdb2e59c429d5941227c5895f0bacaec142
+Author: Nhan Duc Thanh Nguyen <au675308@uni.au.dk>
+Date:   Sun Nov 7 00:05:32 2021 +0100
+
+    - add data extraction from poly5 to EEGLAB and store into BIDs dataset
+
+diff --git a/TMSiSDK/file_readers/poly5reader.py b/TMSiSDK/file_readers/poly5reader.py
+index 0078aab..5de49d9 100644
+--- a/TMSiSDK/file_readers/poly5reader.py
++++ b/TMSiSDK/file_readers/poly5reader.py
+@@ -25,6 +25,8 @@ TMSiSDK: Poly5 File Reader
+ 
+ @version: 2021-06-07
+ 
++Modified by Nhan Nguyen, Center for EarEEG. 2021-10-10
++
+ '''
+ import numpy as np
+ import struct
+@@ -52,7 +54,6 @@ class Poly5Reader:
+                 self.channels=self._readSignalDescription(f)
+                 
+                 sample_buffer=np.zeros(self.num_channels*self.num_samples)
+- 
+                 for i in range(self.num_data_blocks):
+                     print('\rProgress: % 0.1f %%' %(100*i/self.num_data_blocks), end="\r")
+                     i_start=i*self.num_data_blocks+1;
+@@ -74,18 +75,21 @@ class Poly5Reader:
+             
+     def _readHeader(self, f):
+         header_data=struct.unpack("=31sH81phhBHi4xHHHHHHHiHHH64x", f.read(217))
+-        magic_number=str(header_data[0])
+-        version_number=header_data[1]
++        self.magic_number=str(header_data[0])
++        self.version_number=header_data[1]
++        self.name = str(header_data[2])
+         self.sample_rate=header_data[3]
+-        # self.storage_rate=header_data[4]
++        self.storage_rate=header_data[4]
+         self.num_channels=header_data[6]//2
+         self.num_samples=header_data[7]
+         self.start_time=datetime.datetime(header_data[8], header_data[9], header_data[10], header_data[12], header_data[13], header_data[14])
+         self.num_data_blocks=header_data[15]
+         self.num_samples_per_block=header_data[16]
+-        if magic_number !="b'POLY SAMPLE FILEversion 2.03\\r\\n\\x1a'":
++        self.size_data_block=header_data[17]
++        self.compression_flag=header_data[18]
++        if self.magic_number !="b'POLY SAMPLE FILEversion 2.03\\r\\n\\x1a'":
+             print('This is not a Poly5 file.')
+-        elif  version_number != 203:
++        elif  self.version_number != 203:
+             print('Version number of file is invalid.')
+         else:
+             print('\t Number of samples:  %s ' %self.num_samples)
+@@ -96,10 +100,16 @@ class Poly5Reader:
+     def _readSignalDescription(self, f): 
+         chan_list = []
+         for ch in range(self.num_channels):
+-            channel_description=struct.unpack("=41p4x11pffffH62x", f.read(136))
+-            name = channel_description[0][5:].decode('ascii')
+-            unit_name=channel_description[1].decode('utf-8')
+-            ch = Channel(name, unit_name)
++            ch = Channel()
++            channel_description=struct.unpack("=41p4x11pffffHH60x", f.read(136))
++            ch.name = channel_description[0][5:].decode('ascii')
++            ch.unit_name = channel_description[1].decode('utf-8')
++            ch.unit_low = channel_description[2]
++            ch.unit_high = channel_description[3]
++            ch.adc_low = channel_description[4]
++            ch.adc_high = channel_description[5]
++            ch.index = channel_description[6]
++            ch.cache_offset = channel_description[7]
+             chan_list.append(ch)
+             f.read(136)
+         return chan_list
+@@ -123,17 +133,15 @@ class Channel:
+         unit_name : 'string' The name of the unit (e.g. 'μVolt)  of the sample-data of the channel.
+     """
+ 
+-    def __init__(self, name, unit_name):
+-        self.__unit_name = unit_name
+-        self.__name = name
+-        
+-    @property
+-    def unit_name(self):
+-        return self.__unit_name
+-    @property
+-    def name(self):
+-        return self.__name
+-        
++    def __init__(self, name=None, unit_name=None, unit_low=None, unit_high=None, adc_low=None, adc_high=None, index=None, cache_offset=None):
++        self.name = name
++        self.unit_name = unit_name
++        self.unit_low = unit_low
++        self.unit_high = unit_high
++        self.adc_low = adc_low
++        self.adc_high = adc_high
++        self.index = index
++        self.cache_offset = cache_offset        
+         
+ if __name__ == "__main__":
+     data=Poly5Reader()
+
+============================================================================================================================================================================================
+============================================================================================================================================================================================
+============================================================================================================================================================================================
+Later changes made by Chris Winnard:
+
+commit cf5d102
+Author: Chris Winnard <c.j.winnard@qmul.ac.uk>
+Date:   Mon Oct 27 17:32:25 2025 +00:00
+
+diff --git a/poly5reader.py b/poly52bids/poly52bids/TMSiSDK_poly5Reader.py
+index 5de49d9..1f1bf2e 100644
+--- a/poly5reader.py
++++ b/poly52bids/poly52bids/TMSiSDK_poly5Reader.py
+@@ -13,19 +13,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+
+ TMSiSDK: Poly5 File Reader
+
+ @version: 2021-06-07
+
+ Modified by Nhan Nguyen, Center for EarEEG. 2021-10-10
++Later modified by Chris Winnard, AIM CDT. 2025-10-27
+
+ '''
+ import numpy as np
+@@ -131,6 +132,18 @@ class Channel:
+         name : 'string' The name of the channel.
+
+         unit_name : 'string' The name of the unit (e.g. 'μVolt)  of the sample-data of the channel.
++
++        unit_low
++
++        unit_high
++
++        adc_low
++
++        adc_high
++
++        index
++
++        cache_offset
+     """
+
+     def __init__(self, name=None, unit_name=None, unit_low=None, unit_high=None, adc_low=None, adc_high=None, index=None, cache_offset=None):
+@@ -144,4 +157,5 @@ class Channel:
+         self.cache_offset = cache_offset
+
+ if __name__ == "__main__":
++
+     data=Poly5Reader()
