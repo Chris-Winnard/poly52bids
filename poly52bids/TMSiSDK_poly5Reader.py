@@ -13,13 +13,13 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-####### #    #  #####  # ######     #    #
-   #    ##  ## #       # #    #    #    #
-   #    #### #       # #    #    #    #
-   #    # # #  #####  # ######      #  #
-   #    #    #       # # #    #     #  #
-   #    #    #       # # #    #      ##
-   #    #    # #####   # ######  #    #    #
+-#######  #     #   #####   #  ######      #     #
+-   #     ##   ##  #        #  #     #     #     #
+-   #     # # # #  #        #  #     #     #     #
+-   #     #  #  #   #####   #  ######       #   #
+-   #     #     #        #  #  #     #      #   #
+-   #     #     #        #  #  #     #       # #
+-   #     #     #  #####    #  ######   #     #     #
 
 TMSiSDK: Poly5 File Reader
 
@@ -157,4 +157,5 @@ class Channel:
         self.cache_offset = cache_offset        
         
 if __name__ == "__main__":
+
     data=Poly5Reader()
