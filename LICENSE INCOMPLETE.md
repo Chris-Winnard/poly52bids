@@ -1,6 +1,6 @@
 ## General license: MIT License
 
-Copyright (c) 2025 Chris Winnard
+Copyright (c) 2025 Chris Winnard, Simon Lind Kappel, Nhan Duc Thanh Nguyen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -41,3 +41,4 @@ limitations under the License.
 
 
 Under the terms of the license, details of changes made from the original TMSi file (poly5reader.py) are given in TMSiSDK_Poly5Reader_changes.txt.
+
