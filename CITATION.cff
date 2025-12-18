@@ -29,7 +29,7 @@ authors:
     affiliation: "Aarhus University"
 identifiers:
   - type: doi
-    value: TBC
+    value: 10.5281/zenodo.17981773
     description: The concept DOI of the software.
 abstract: >-
   Package to convert .poly5 EEG and .csv PsychoPy behavioural data to
@@ -41,8 +41,8 @@ keywords:
   - BIDS
   - EEG-BIDS
   - File conversion
-commit: officialRelease0.9.9
-version: 0.9.9
+commit: officialRelease1.0.0
+version: 1.0.0
 date-released: '2025-12-18'
 references:
  - type: article
