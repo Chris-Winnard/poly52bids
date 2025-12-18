@@ -3,13 +3,6 @@ from setuptools import setup, find_packages
 setup(name="poly52bids",
       version="1.0.0",
       packages=find_packages(),
-      install_requires=["matlabengineforpython",
-                        "matplotlib",
-                        "mne",
-                        "mne_bids",
-                        "numpy",
-                        "pandas",
-                        "pybv"],
     entry_points={"console_scripts": ["poly52bids = poly52bids.__main__:main"]},
     author="Chris Winnard",
     description="""Package to convert from .poly5 EEG and .csv behavioural data

@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 
 def additionalDataReader(basePath, participantNumber, handedness):
     "Read participant data such as age, rec date, etc."
@@ -56,7 +56,7 @@ def additionalDataReader(basePath, participantNumber, handedness):
     else:
         monthPlaceholder = int(recDateTime[5:7])
         dayPlaceholder = int(recDateTime[8:10])  - 1 #If recording takes place on the first, will need to change date formatting slightly..
-    birthdatePlaceholder = [yearPlaceholder, monthPlaceholder, dayPlaceholder]
+    birthdatePlaceholder = date(yearPlaceholder, monthPlaceholder, dayPlaceholder)
     additionalInfo = {"sex": sexInt, "Birthdate placeholder": birthdatePlaceholder, "hand" : handednessInt, "Recdate UTC form": recDateTime_UTCform}
     
     return additionalInfo

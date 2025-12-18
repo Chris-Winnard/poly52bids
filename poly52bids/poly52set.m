@@ -15,31 +15,34 @@ function poly52set(basePath, participantNumber, recordingProperty, rec1, rec2)
 
 %rec1 and rec2 are specifically for splitRecs (since splitRecs corresponds to a single participant we could use the splitRecs workflow and set
 %rec1, rec2 for that participant, just included these for completeness/generalisability).
-         
-    %Arguments are input as chars, need to convert to strings:
-    basePath = convertCharsToStrings(basePath);
-    participantNumber = convertCharsToStrings(participantNumber);
-    recordingProperty = convertCharsToStrings(recordingProperty);
 
-    if recordingProperty ~= "splitRecs"    
-        rawDataPath = basePath + '/sourcedata/P' + participantNumber + '/';
+    setFilePath = fullfile(basePath, 'EEG Set Files (Unprocessed)');
+    % Create the folder if it doesn't exist
+    if ~exist(setFilePath, 'dir')
+        mkdir(setFilePath);
+    end
+
+    %Arguments are input as chars, need to convert recordingProperty to strings:
+    recordingProperty = convertCharsToStrings(recordingProperty);
     
-        fileName = 'P' + participantNumber + '_scalp';
-        fileNamePath_full = rawDataPath + fileName + '.Poly5';
+    if recordingProperty ~= "splitRecs"
+        rawDataPath = [basePath '/sourcedata/P' participantNumber '/'];
+    
+        fileName = ['P' participantNumber '_scalp'];
+        fileNamePath_full = [rawDataPath fileName '.Poly5'];
         fileNamePath_full = convertStringsToChars(fileNamePath_full);
-    
+
         ChannelLabels = {'Fp1', 'Fpz', 'Fp2', 'F7', 'F3', 'Fz', 'F4', 'F8', 'FC5', 'FC1', 'FC2', 'FC6', 'M1', 'T7',...
         'C3', 'Cz', 'C4', 'T8', 'M2', 'CP5', 'CP1', 'CP2', 'CP6', 'P7', 'P3', 'Pz', 'P4', 'P8', 'POz', 'O1', 'Oz', 'O2'};
-        
+    
         EEG_scalp = pop_loadpoly5_2('filepath','','filename',fileNamePath_full,'ref_ch',[1:32],'NaNdiscSamples',true,'ChannelsDiscThd',1,'EnableSaturationDisc',true,'EnableSameValueDisc',false,'ChannelLabels',ChannelLabels);
         %Need to set to average reference. This is without irrelevant chans (and discarded chans not included), and also more accurate than the average referencing done within the Mobita.
     
         EEG_scalp=pop_select(EEG_scalp,'channel',1:32);
         
         %save as EEGLAB struct (useful for Python work):
-        setFilePath = char(basePath + 'EEG Set Files (Unprocessed)\');
-        outputFileName= char('P' + participantNumber + '_scalp.set');
-        pop_saveset(EEG_scalp, outputFileName, setFilePath);
+        outputFileName= ['P' participantNumber '_scalp.set'];
+        pop_saveset(EEG_scalp, 'filename', outputFileName, 'filepath', setFilePath,'savemode', 'onefile');
     
     
         %cEEGrid- something very similar to the scalp analysis, but accounting for different properties for different
@@ -47,8 +50,8 @@ function poly52set(basePath, participantNumber, recordingProperty, rec1, rec2)
         if recordingProperty == "noCeegrid" %For some participants there is no ceegrid, so skip
             return
         else
-            fileName = 'P' + participantNumber + '_ceegrid';
-            fileNamePath_full = rawDataPath + fileName + '.Poly5';
+            fileName = ['P' participantNumber '_ceegrid'];
+            fileNamePath_full = [rawDataPath fileName '.Poly5'];
             fileNamePath_full = convertStringsToChars(fileNamePath_full);
     
             if recordingProperty == "baseline"
@@ -88,24 +91,22 @@ function poly52set(basePath, participantNumber, recordingProperty, rec1, rec2)
                 
                     % === Select only active cEEGrid channels ===
                     EEG_ceegrid = pop_select(EEG_ceegrid, 'channel', [1:11, 17:26]); %Remove empty channels
-            
-               
+            end
+                       
             %save as EEGLAB struct (useful for Python work):
-            outputFileName= char('P' + participantNumber + '_ceegrid.set');
-            pop_saveset(EEG_ceegrid, outputFileName, setFilePath);
-
-
-    else %if recordingProperty == splitRecs
-        rec1 = convertCharsToStrings(rec1);
-        rec2 = convertCharsToStrings(rec2);
+            outputFileName= ['P' participantNumber '_ceegrid.set'];
+            pop_saveset(EEG_ceegrid, 'filename', outputFileName, 'filepath', setFilePath,'savemode', 'onefile');
+        end
     
-        rawDataPath = basePath + '/sourcedata/P' + participantNumber + '/';
+    else %if recordingProperty == splitRecs
+    
+        rawDataPath = [basePath '/sourcedata/P' participantNumber '/'];
         
         %Scalp:
     
         %First recording:
-        fileName_rec1 = 'P' + participantNumber + '_' + rec1 +  '_scalp';
-        fileNamePath_full = rawDataPath + fileName_rec1 + '.Poly5';
+        fileName_rec1 = ['P' participantNumber '_' rec1  '_scalp'];
+        fileNamePath_full = [rawDataPath fileName_rec1 '.Poly5'];
         fileNamePath_full = convertStringsToChars(fileNamePath_full);
     
         ChannelLabels = {'Fp1', 'Fpz', 'Fp2', 'F7', 'F3', 'Fz', 'F4', 'F8', 'FC5', 'FC1', 'FC2', 'FC6', 'M1', 'T7',...
@@ -113,12 +114,12 @@ function poly52set(basePath, participantNumber, recordingProperty, rec1, rec2)
 
         EEG_scalp_rec1 = pop_loadpoly5_2('filepath','','filename',fileNamePath_full,'ref_ch',[1:32],'NaNdiscSamples',true,'ChannelsDiscThd',1,'EnableSaturationDisc',true,'EnableSameValueDisc',false,'ChannelLabels',ChannelLabels);
         %Need to set to average reference. This is without irrelevant chans (and discarded chans not included), and also more accurate than the average referencing done within the Mobita.
-        
+
         EEG_scalp_rec1 = pop_select(EEG_scalp_rec1,'channel',1:32);
     
         %Second recording:
-        fileName_rec2 = 'P' + participantNumber + '_' + rec2 +  '_scalp';
-        fileNamePath_full = rawDataPath + fileName_rec2 + '.Poly5';
+        fileName_rec2 = ['P' participantNumber '_' rec2 '_scalp'];
+        fileNamePath_full = [rawDataPath fileName_rec2 '.Poly5'];
         fileNamePath_full = convertStringsToChars(fileNamePath_full);
     
         EEG_scalp_rec2 = pop_loadpoly5_2('filepath','','filename',fileNamePath_full,'ref_ch',[1:32],'NaNdiscSamples',true,'ChannelsDiscThd',1,'EnableSaturationDisc',true,'EnableSameValueDisc',false,'ChannelLabels',ChannelLabels);
@@ -126,14 +127,13 @@ function poly52set(basePath, participantNumber, recordingProperty, rec1, rec2)
     
         %Merge the two together, and then save:
         EEG_merged_scalp = pop_mergeset(EEG_scalp_rec1, EEG_scalp_rec2);
-    
-        setFilePath = char(basePath + 'EEG Set Files (Unprocessed)\');
-        outputFileName = char('P' + participantNumber + '_scalp.set');
-        pop_saveset(EEG_merged_scalp, outputFileName, setFilePath);
+   
+        outputFileName = ['P' participantNumber '_scalp.set'];
+        pop_saveset(EEG_merged_scalp, 'filename', outputFileName, 'filepath', setFilePath,'savemode', 'onefile');
            
         %Now something very similar for the ceegrid data:
-        fileName_rec1 = 'P' + participantNumber + '_' + rec1 +  '_ceegrid';
-        fileNamePath_full = rawDataPath + fileName_rec1 + '.Poly5';
+        fileName_rec1 = ['P' participantNumber '_' rec1 '_ceegrid'];
+        fileNamePath_full = [rawDataPath fileName_rec1 '.Poly5'];
         fileNamePath_full = convertStringsToChars(fileNamePath_full);
     
         %Fpz is reference:
@@ -144,8 +144,8 @@ function poly52set(basePath, participantNumber, recordingProperty, rec1, rec2)
         EEG_ceegrid_rec1 = pop_select(EEG_ceegrid_rec1,'channel',[1:11, 17:26]);
         
         %Second recording:
-        fileName_rec2 = 'P' + participantNumber + '_' + rec2 +  '_ceegrid';
-        fileNamePath_full = rawDataPath + fileName_rec2 + '.Poly5';
+        fileName_rec2 = ['P' participantNumber '_' rec2 '_ceegrid'];
+        fileNamePath_full = [rawDataPath fileName_rec2 '.Poly5'];
         fileNamePath_full = convertStringsToChars(fileNamePath_full);
     
         EEG_ceegrid_rec2 = pop_loadpoly5_2('filepath','','filename',fileNamePath_full,'ref_ch',[1:11, 17:26],'NaNdiscSamples',true,'ChannelsDiscThd',1,'EnableSaturationDisc',true,'EnableSameValueDisc',false,'ChannelLabels',ChannelLabels);
@@ -154,9 +154,7 @@ function poly52set(basePath, participantNumber, recordingProperty, rec1, rec2)
         %Merge the two together, and then save:
         EEG_merged_ceegrid = pop_mergeset(EEG_ceegrid_rec1, EEG_ceegrid_rec2);
     
-        setFilePath = char(basePath + 'EEG Set Files (Unprocessed)\');
-        outputFileName= char('P' + participantNumber + '_ceegrid.set');
-        pop_saveset(EEG_merged_ceegrid, outputFileName, setFilePath);
-        end
+        outputFileName = ['P' participantNumber '_ceegrid.set'];
+        pop_saveset(EEG_merged_ceegrid, 'filename', outputFileName, 'filepath', setFilePath,'savemode', 'onefile');
     end
 end

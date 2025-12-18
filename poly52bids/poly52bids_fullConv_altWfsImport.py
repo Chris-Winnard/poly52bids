@@ -1,8 +1,15 @@
 import pathlib
-import matlab.engine
-from poly52trigs_allVersions import *
-from setAndTrigs2bids_allVersions import *
-from additionalDataReader import *
+from .poly52trigs_allVersions import *
+from .setAndTrigs2bids_allVersions import *
+from .additionalDataReader import *
+import os
+
+try:
+    import matlab.engine
+except ImportError as e:
+    raise ImportError(
+        "MATLAB Engine for Python is required but not installed.\nPlease install it from your MATLAB installation."
+    ) from e
 
 """Alternate versions of the main poly52bids workflow. In order, these are for dealing with:
 -Participants with only partial ceegrid data, and trigger corrections added.
@@ -14,6 +21,7 @@ def poly52bids_partial_ceegrid_addCorrections(basePath, eeglabPath, participantN
     
     eng = matlab.engine.start_matlab()
     eng.addpath(eeglabPath, nargout=0)
+    eng.addpath(eng.genpath(os.getcwd()), nargout=0)
     eng.poly52set(basePath, participantNumber, "baseline","","", nargout=0) #3rd arg is recordingProperty
     eng.quit()   
     print("cEEGrid arrays OK for " + participantNumber + ".")
@@ -38,6 +46,7 @@ def poly52bids_no_ceegrid(basePath, eeglabPath, participantNumber, handedness, f
     
     eng = matlab.engine.start_matlab()
     eng.addpath(eeglabPath, nargout=0)
+    eng.addpath(eng.genpath(os.getcwd()), nargout=0)
     eng.poly52set(basePath, participantNumber, "noCeegrid","","", nargout=0)
     eng.quit()   
     print("cEEGrid arrays OK for " + participantNumber + ".")

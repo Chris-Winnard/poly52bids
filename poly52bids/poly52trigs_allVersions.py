@@ -1,8 +1,8 @@
-from SerialTriggerDecoder import *
-from poly52POPO_import import *
+from .SerialTriggerDecoder import *
+from .poly52POPO_import import *
 import numpy as np
 import csv
-from expectedTriggerCalculator import *
+from .expectedTriggerCalculator import *
 
 """Versions of poly52trigs (in order):
 -Baseline.
@@ -14,7 +14,7 @@ from expectedTriggerCalculator import *
 -Extra data. Only for converting the extra data, not other data from the chosen participant."""
 
 def poly52trigs(basePath, participantNumber,filterBufferPeriod):
-    rawDataPath = basePath + 'sourcedata\P' + participantNumber + '\\'
+    rawDataPath = basePath + '/sourcedata/P' + participantNumber + '/'
     scalpFilename = "P" + participantNumber + "_scalp.Poly5"
     ceegridFilename = "P" + participantNumber + "_ceegrid.Poly5"
     
@@ -26,7 +26,7 @@ def poly52trigs(basePath, participantNumber,filterBufferPeriod):
     TRIGGER_CLK = 16
     THR_ERROR = -0.05
     TRANS_ERROR = 0.1
-
+    
     #read scalp poly5
     scalp_eeg = poly52POPO(SCALP_EEG, 'scalp')
     scalp_eeg.decode_events(triggerClk=TRIGGER_CLK, thrError=THR_ERROR, transError=TRANS_ERROR)
@@ -115,7 +115,7 @@ def poly52trigs(basePath, participantNumber,filterBufferPeriod):
 #######################################################################################################################################################################################################
     #Save to files, in a BIDS-friendly format:
     
-    outputDir = basePath + "bids_dataset\sub-" + participantNumber + "\eeg\\"
+    outputDir = basePath + "/bids_dataset/sub-" + participantNumber + "/eeg/"
     outputDirExists = os.path.exists(outputDir)
     
     if not outputDirExists:
@@ -524,7 +524,7 @@ def poly52trigs(basePath, participantNumber,filterBufferPeriod):
 
 #Version for using triggers from .txt file, including manually-corrected ones:
 def poly52trigs_addCorrections(basePath, participantNumber,filterBufferPeriod):
-    rawDataPath = basePath + 'sourcedata\P' + participantNumber + '\\'
+    rawDataPath = basePath + '/sourcedata/P' + participantNumber + '/'
     
     subjFolder = "sub-" + participantNumber
     
@@ -620,7 +620,7 @@ def poly52trigs_addCorrections(basePath, participantNumber,filterBufferPeriod):
 #######################################################################################################################################################################################################
     #Save to files, in a BIDS-friendly format:
     
-    outputDir = basePath + "bids_dataset\sub-" + participantNumber + "\eeg\\"
+    outputDir = basePath + "/bids_dataset/sub-" + participantNumber + "/eeg/"
     outputDirExists = os.path.exists(outputDir)
     
     if not outputDirExists:
@@ -1027,7 +1027,7 @@ def poly52trigs_addCorrections(basePath, participantNumber,filterBufferPeriod):
 
 #Version for converting if no ceegrid data:
 def poly52trigs_no_ceegrid(basePath, participantNumber, filterBufferPeriod):
-    rawDataPath = basePath + 'sourcedata\P' + participantNumber + '\\'
+    rawDataPath = basePath + '/sourcedata/P' + participantNumber + '/'
     scalpFilename = "P" + participantNumber + "_scalp.Poly5"
     
     SCALP_EEG = rawDataPath + scalpFilename
@@ -1064,7 +1064,7 @@ def poly52trigs_no_ceegrid(basePath, participantNumber, filterBufferPeriod):
 #######################################################################################################################################################################################################
     #Save to files, in a BIDS-friendly format:
     
-    outputDir = basePath + "bids_dataset\sub-" + participantNumber + "\eeg\\"
+    outputDir = basePath + "/bids_dataset/sub-" + participantNumber + "/eeg/"
     outputDirExists = os.path.exists(outputDir)
     
     if not outputDirExists:
@@ -1273,7 +1273,7 @@ def poly52trigs_no_ceegrid(basePath, participantNumber, filterBufferPeriod):
 
 #Version for converting if no ceegrid data; this version also involves using triggers from .txt file, including manually-corrected ones:
 def poly52trigs_no_ceegrid_addCorrections(basePath, participantNumber,filterBufferPeriod):
-    rawDataPath = basePath + 'sourcedata\P' + participantNumber + '\\'
+    rawDataPath = basePath + '/sourcedata/P' + participantNumber + '/'
     
     subjFolder = "sub-" + participantNumber
     
@@ -1307,7 +1307,7 @@ def poly52trigs_no_ceegrid_addCorrections(basePath, participantNumber,filterBuff
 #######################################################################################################################################################################################################
     #Save to files, in a BIDS-friendly format:
     
-    outputDir = basePath + "bids_dataset\sub-" + participantNumber + "\eeg\\"
+    outputDir = basePath + "/bids_dataset/sub-" + participantNumber + "/eeg/"
     outputDirExists = os.path.exists(outputDir)
     
     if not outputDirExists:
@@ -1517,7 +1517,7 @@ def poly52trigs_no_ceegrid_addCorrections(basePath, participantNumber,filterBuff
 #Keeping in the scalp vs. ceegrid trig checks early on, as all of the ceegrid trigs recorded OK, and these are useful to have. Also, leaving the code generalisable
 #as much as possible.
 def poly52trigs_partial_ceegrid_addCorrections(basePath, participantNumber, filterBufferPeriod):  
-    rawDataPath = basePath + 'sourcedata\P' + participantNumber + '\\'
+    rawDataPath = basePath + '/sourcedata/P' + participantNumber + '/'
     
     subjFolder = "sub-" + participantNumber
     
@@ -1613,7 +1613,7 @@ def poly52trigs_partial_ceegrid_addCorrections(basePath, participantNumber, filt
 #######################################################################################################################################################################################################
     #Save to files, in a BIDS-friendly format:
     
-    outputDir = basePath + "bids_dataset\sub-" + participantNumber + "\eeg\\"
+    outputDir = basePath + "/bids_dataset/sub-" + participantNumber + "/eeg/"
     outputDirExists = os.path.exists(outputDir)
     
     if not outputDirExists:
@@ -2033,7 +2033,7 @@ def poly52trigs_partial_ceegrid_addCorrections(basePath, participantNumber, filt
 
 #Version for one participant where recording was stopped and restarted (meaning two scalp files, two ceegrid files):
 def poly52trigs_splitRecs(basePath, participantNumber, rec1, rec2, filterBufferPeriod):
-    rawDataPath = basePath + 'sourcedata\P' + participantNumber + '\\'
+    rawDataPath = basePath + '/sourcedata/P' + participantNumber + '/'
     scalpFilename_rec1 = "P" + participantNumber + '_' + rec1 + "_scalp.Poly5"
     scalpFilename_rec2 = "P" + participantNumber + '_' + rec2 + "_scalp.Poly5"
     
@@ -2165,7 +2165,7 @@ def poly52trigs_splitRecs(basePath, participantNumber, rec1, rec2, filterBufferP
 #######################################################################################################################################################################################################
     #Save to files, in a BIDS-friendly format:
     
-    outputDir = basePath + "bids_dataset\sub-" + participantNumber + "\eeg\\"
+    outputDir = basePath + "/bids_dataset/sub-" + participantNumber + "/eeg/"
     outputDirExists = os.path.exists(outputDir)
     
     if not outputDirExists:
@@ -2574,7 +2574,7 @@ def poly52trigs_splitRecs(basePath, participantNumber, rec1, rec2, filterBufferP
 
 #Version for converting extra data- doesn't convert other data from the same participant:
 def poly52trigs_extraData(basePath, participantNumber, filterBufferPeriod):
-    rawDataPath = basePath + 'sourcedata\P' + participantNumber + '\\'
+    rawDataPath = basePath + '/sourcedata/P' + participantNumber + '/'
     
     subjFolder = "sub-" + participantNumber
     
@@ -2672,7 +2672,7 @@ def poly52trigs_extraData(basePath, participantNumber, filterBufferPeriod):
 #######################################################################################################################################################################################################
     #Save to files
     
-    outputDir = basePath + "bids_dataset\misc\\"
+    outputDir = basePath + "/bids_dataset/misc/"
     outputDirExists = os.path.exists(outputDir)
     
     if not outputDirExists:
@@ -2689,7 +2689,7 @@ def poly52trigs_extraData(basePath, participantNumber, filterBufferPeriod):
         task = "attnMultInstOBsExtra"    
         
         filename = subjFolder + "_task-" + task + "_acq-scalp_events.tsv"
-        scalpEvents_BIDS = (outputDir + "sub-09\\eeg\\" + filename)
+        scalpEvents_BIDS = (outputDir + "sub-09/eeg/" + filename)
         os.makedirs(os.path.dirname(scalpEvents_BIDS), exist_ok=True)
         
         P2trialStartVals = np.arange(73, 144, 2)
@@ -2766,7 +2766,7 @@ def poly52trigs_extraData(basePath, participantNumber, filterBufferPeriod):
         P2ended = False
         i = 0
         filename = subjFolder + "_task-" + task + "_acq-ceegrid_events.tsv"
-        ceegridEvents_BIDS = (outputDir + "sub-09\\eeg\\" + filename)
+        ceegridEvents_BIDS = (outputDir + "sub-09/eeg/" + filename)
         os.makedirs(os.path.dirname(ceegridEvents_BIDS), exist_ok=True)
         
         for item in reversed(ceegridCodes):
@@ -2851,7 +2851,7 @@ def poly52trigs_extraData(basePath, participantNumber, filterBufferPeriod):
             
         task = "attnOneInstNoOBsExtra"    
         filename = subjFolder + "_task-" + task + "_acq-scalp_events.tsv"
-        scalpEvents_BIDS = (outputDir + "sub-28\\eeg\\" + filename)
+        scalpEvents_BIDS = (outputDir + "sub-28/eeg/" + filename)
         os.makedirs(os.path.dirname(scalpEvents_BIDS), exist_ok=True)
             
         with open(scalpEvents_BIDS, 'w', newline='') as tsvfile:
@@ -2911,7 +2911,7 @@ def poly52trigs_extraData(basePath, participantNumber, filterBufferPeriod):
             
         #P3:
         filename = subjFolder + "_task-" + task + "_acq-ceegrid_events.tsv"
-        ceegridEvents_BIDS = (outputDir + "sub-28\eeg\\" + filename)
+        ceegridEvents_BIDS = (outputDir + "sub-28/eeg/" + filename)
         os.makedirs(os.path.dirname(ceegridEvents_BIDS), exist_ok=True)
             
         with open(ceegridEvents_BIDS, 'w', newline='') as tsvfile:

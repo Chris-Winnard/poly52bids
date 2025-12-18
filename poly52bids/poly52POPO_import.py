@@ -1,5 +1,5 @@
-from TMSiSDK_poly5Reader import *
-from SerialTriggerDecoder import *
+from .TMSiSDK_poly5Reader import *
+from .SerialTriggerDecoder import *
 
 class EEGData:
     def __init__(self):

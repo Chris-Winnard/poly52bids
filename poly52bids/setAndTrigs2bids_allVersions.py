@@ -1,7 +1,7 @@
 import mne
 from mne_bids import BIDSPath, write_raw_bids, update_sidecar_json
 import pybv
-import ceegrid_coords
+from . import ceegrid_coords
 import os
 import datetime
 from datetime import timezone
@@ -16,9 +16,9 @@ import pandas as pd
 
 #Baseline version:
 def setAndTrigs2bids(basePath, participantNumber, partStartEndLatencies_scalp, partStartEndLatencies_ceegrid, additionalData):
-    setDataPath = basePath + 'EEG Set Files (Unprocessed)\\'
+    setDataPath = os.path.join(basePath, 'EEG Set Files (Unprocessed)')
     
-    bidsRoot = basePath + 'bids_dataset'
+    bidsRoot = os.path.join(basePath, 'bids_dataset')
     
     """IMPORTANT: Remember to change recording date/time, participant sex and birthday. If birthday is unknown,
     can just assume it was the day before the recording (only care about age in years)."""
@@ -272,9 +272,9 @@ def setAndTrigs2bids(basePath, participantNumber, partStartEndLatencies_scalp, p
 
 #Version for converting if no ceegrid data:
 def setAndTrigs2bids_no_ceegrid(basePath, participantNumber, partStartEndLatencies_scalp, additionalData):
-    setDataPath = basePath + 'EEG Set Files (Unprocessed)\\'
+    setDataPath = os.path.join(basePath, 'EEG Set Files (Unprocessed)')
     
-    bidsRoot = basePath + 'bids_dataset'
+    bidsRoot = os.path.join(basePath, 'bids_dataset')
     
     """IMPORTANT: Remember to change recording date/time, participant sex and birthday. If birthday is unknown,
     can just assume it was the day before the recording (only care about age in years)."""
@@ -424,9 +424,9 @@ def setAndTrigs2bids_no_ceegrid(basePath, participantNumber, partStartEndLatenci
 
 #Version for converting if only some ceegrid data:
 def setAndTrigs2bids_partial_ceegrid(basePath, participantNumber, partStartEndLatencies_scalp, partStartEndLatencies_ceegrid, additionalData):
-    setDataPath = basePath + 'EEG Set Files (Unprocessed)\\'
+    setDataPath = os.path.join(basePath, 'EEG Set Files (Unprocessed)')
     
-    bidsRoot = basePath + 'bids_dataset'
+    bidsRoot = os.path.join(basePath, 'bids_dataset')
     
     """IMPORTANT: Remember to change recording date/time, participant sex and birthday. If birthday is unknown,
     can just assume it was the day before the recording (only care about age in years)."""
@@ -676,9 +676,9 @@ def setAndTrigs2bids_partial_ceegrid(basePath, participantNumber, partStartEndLa
 
 #Version to convert extra data- doesn't convert other data from the same participant:
 def setAndTrigs2bids_extraData(basePath, participantNumber, partStartEndLatencies_scalp, partStartEndLatencies_ceegrid, additionalData):
-    setDataPath = basePath + 'EEG Set Files (Unprocessed)\\'
+    setDataPath = os.path.join(basePath, 'EEG Set Files (Unprocessed)')
     
-    bidsRoot = basePath + 'bids_dataset'
+    bidsRoot = os.path.join(basePath, 'bids_dataset')
     
     subjFolder = "sub-"+ participantNumber
     

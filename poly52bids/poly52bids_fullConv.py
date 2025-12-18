@@ -1,13 +1,20 @@
-from poly52bids_fullConv_altWfsImport import *
-import pathlib
-import matlab.engine
-from poly52trigs_allVersions import *
-from setAndTrigs2bids_allVersions import *
-from additionalDataReader import *
-from intendedOddballTimeCopier import *
-from fileFormatter import *
+from .poly52bids_fullConv_altWfsImport import *
+from pathlib import Path
+from .poly52trigs_allVersions import *
+from .setAndTrigs2bids_allVersions import *
+from .additionalDataReader import *
+from .intendedOddballTimeCopier import *
+from .fileFormatter import *
 import os
 import shutil
+
+try:
+    import matlab.engine
+except ImportError as e:
+    raise ImportError(
+        "MATLAB Engine for Python is required but not installed.\nPlease install it from your MATLAB installation."
+    ) from e
+
 
 """For converting from sourcedata to the EEG-BIDS format for the DAAMEE dataset (and the code may be of interest to anyone working with data
 from EEG experiments generally, particularly TMSi .poly5 files).
@@ -23,17 +30,29 @@ The overall conversion has seven stages:
 2- Converting triggers to BIDS events files. These will either be straight from the .poly5 files, or, where necessary, from manually corrected
 .txt files (in some cases there were errors in trigger recordings).
 3- Reading additional metadata from the questionnaire file.
-4- Converting the above three into the remaining BIDS files for that participant. Also, converting data from the PsychoPy log .csvs into
+4- Converting the .set files and questionnaire metadata into the remaining BIDS files for that participant. Also, converting data from the PsychoPy log .csvs into
 BIDS _beh.tsv files.
-5- Copying the oddball metadata for part 2/attnMultInstOBs from sourcedata to BIDS.
+5- Copying the oddball metadata for part 2/attnMultInstOBs from sourcedata to BIDS. Also, if .set files aren't being saved, delete the ones for this participant.
 6- Finally, reading through and formatting the _eeg.json and _beh.tsv files. This is done across the dataset so only needs to be done once,
-after steps 1-5 are finished for all participants.
+after steps 1-5 are finished for all participants. Also, if .set files weren't being saved, delete the (now empty) folder for them.
 7. OPTIONAL: Copy, or move, sourcedata to the bids_dataset folder.
-Note also that some parts of the BIDS dataset were added/adapted manually, e.g., dataset_description.json."""
+Note also that some parts of the BIDS dataset were added/adapted manually, e.g., dataset_description.json.
+
+'extra' data for two participants is either sorted out on its own ("exclusively"), during stage 5 for those participants ("additionally"), or not at all (none)."""
 
 
-def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, processExtraData, sourcedataTransfer):
+
+def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, processExtraData, sourcedataTransfer, keepSetFiles):
     """Now we begin:"""
+    
+    # Convert any path backslashes to forward slashes, remove trailing slashes:
+    basePath = basePath.replace('\\', '/')
+    basePath = basePath.rstrip('/')
+    eeglabPath = eeglabPath.replace('\\', '/')
+    eeglabPath = eeglabPath.rstrip('/')
+    
+    if keepSetFiles == "no": #Will need this later to delete files and folders
+        setDataPath = os.path.join(basePath, 'EEG Set Files (Unprocessed)')
         
     if processExtraData == "exclusively":
         print("Extra data is available for these participants (e.g., due to issues where the experiment had to be restarted, and will " +
@@ -49,9 +68,23 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
             
             eng = matlab.engine.start_matlab()
             eng.addpath(eeglabPath, nargout=0)
+            eng.addpath(eng.genpath(os.getcwd()), nargout=0)
             eng.poly52set(basePath, participantNumber, "baseline","","", nargout=0) #3rd arg is recordingProperty
             eng.quit()   
             poly52bids_extraData(basePath, participantNumber, handedness, filterBufferPeriod)
+            
+            intendedOddballTimeCopier(basePath, participantNumber)
+            
+            if keepSetFiles == "no": #Delete set files now we have no use for them if user wants
+                for filename in os.listdir(setDataPath):
+                    fileNamePath_full = os.path.join(setDataPath, filename)  
+                    try:
+                        if os.path.isfile(fileNamePath_full) or os.path.islink(fileNamePath_full):
+                            os.remove(fileNamePath_full)
+                    except Exception as e:
+                        print(f"Failed to delete {fileNamePath_full}. Reason: {e}")
+                
+            print("Stage 5 of conversion complete.")
 
     ############################################################################################################################################
     ############################################################################################################################################
@@ -86,6 +119,7 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                             
                 eng = matlab.engine.start_matlab()
                 eng.addpath(eeglabPath, nargout=0)
+                eng.addpath(eng.genpath(os.getcwd()), nargout=0)
                 eng.poly52set(basePath, participantNumber,"splitRecs", rec1, rec2, nargout=0)
                 eng.quit()   
                 print("cEEGrid arrays OK for " + participantNumber + ".")
@@ -107,6 +141,7 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                 if participantNumber in ["01", "02", "22"]: #For these participants, cEEGrid chans were mistakenly inverted
                     eng = matlab.engine.start_matlab()
                     eng.addpath(eeglabPath, nargout=0)
+                    eng.addpath(eng.genpath(os.getcwd()), nargout=0)
                     eng.poly52set(basePath, participantNumber, "invertedCeegrid","","", nargout=0)
                     eng.quit()
                     print("Note: cEEGrid arrays were mistakenly reversed for P" + participantNumber + " so we have corrected for this. You do not need to"
@@ -114,6 +149,7 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                 elif participantNumber in ["29", "30", "31", "32"]:
                     eng = matlab.engine.start_matlab()
                     eng.addpath(eeglabPath, nargout=0)
+                    eng.addpath(eng.genpath(os.getcwd()), nargout=0)
                     eng.poly52set(basePath, participantNumber, "cER10switched","","", nargout=0)
                     eng.quit()
                     print("The cER10 electrode was broken and another electrode from the set had to be moved to replace it for " + participantNumber + " so we have corrected for this. You do not need to"
@@ -122,6 +158,7 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                 else:
                     eng = matlab.engine.start_matlab()
                     eng.addpath(eeglabPath, nargout=0)
+                    eng.addpath(eng.genpath(os.getcwd()), nargout=0)
                     eng.poly52set(basePath, participantNumber, "baseline","","", nargout=0)
                     eng.quit()
                     print("cEEGrid arrays OK for " + participantNumber + ".")
@@ -144,7 +181,6 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                 print("Stage 4 of conversion complete.")
 
             intendedOddballTimeCopier(basePath, participantNumber)
-            print("Stage 5 of conversion complete.")
             
             if participantNumber in ["09","28"]:
                 print("Extra data is available for this participant (e.g, due to issues where the experiment had to be restarted, and will" +
@@ -153,6 +189,17 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                 poly52bids_extraData(basePath, participantNumber, handedness, filterBufferPeriod)
                 print("The extra data has been converted and stored in a \"misc\" folder alongside that of the other participants.")
                 
+            if keepSetFiles == "no": #Delete set files now we have no use for them if user wants
+                for filename in os.listdir(setDataPath):
+                    fileNamePath_full = os.path.join(setDataPath, filename)  
+                    try:
+                        if os.path.isfile(fileNamePath_full) or os.path.islink(fileNamePath_full):
+                            os.remove(fileNamePath_full)
+                    except Exception as e:
+                        print(f"Failed to delete {fileNamePath_full}. Reason: {e}")
+                
+            print("Stage 5 of conversion complete.")
+            
     else:
         for participantNumber in subjects:
             
@@ -182,6 +229,7 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                 
                 eng = matlab.engine.start_matlab()
                 eng.addpath(eeglabPath, nargout=0)
+                eng.addpath(eng.genpath(os.getcwd()), nargout=0)
                 eng.poly52set(basePath, participantNumber,"splitRecs", rec1, rec2, nargout=0)
                 eng.quit()   
                 print("cEEGrid arrays OK for " + participantNumber + ".")
@@ -203,6 +251,7 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                 if participantNumber in ["01", "02", "22"]: #For these participants, cEEGrid chans were mistakenly inverted
                  eng = matlab.engine.start_matlab()
                  eng.addpath(eeglabPath, nargout=0)
+                 eng.addpath(eng.genpath(os.getcwd()), nargout=0)
                  eng.poly52set(basePath, participantNumber, "invertedCeegrid","","", nargout=0)
                  eng.quit()   
                  print("Note: cEEGrid arrays were mistakenly reversed for P" + participantNumber + " so we have corrected for this. You do not need to"
@@ -212,6 +261,7 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                     #Later ones- need to use cER10_switched
                     eng = matlab.engine.start_matlab()
                     eng.addpath(eeglabPath, nargout=0)
+                    eng.addpath(eng.genpath(os.getcwd()), nargout=0)
                     eng.poly52set(basePath, participantNumber, "cER10switched","","", nargout=0)
                     eng.quit()   
                     print("The cER10 electrode was broken and another electrode from the set had to be moved to replace it for " +
@@ -220,6 +270,7 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                 else:
                     eng = matlab.engine.start_matlab()
                     eng.addpath(eeglabPath, nargout=0)
+                    eng.addpath(eng.genpath(os.getcwd()), nargout=0)
                     eng.poly52set(basePath, participantNumber, "baseline","","", nargout=0)
                     eng.quit()   
                     print("cEEGrid arrays OK for " + participantNumber + ".")
@@ -242,10 +293,26 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
                 print("Stage 4 of conversion complete.")
                 
             intendedOddballTimeCopier(basePath, participantNumber)
+            
+            if keepSetFiles == "no": #Delete set files now we have no use for them if user wants              
+                for filename in os.listdir(setDataPath):
+                    fileNamePath_full = os.path.join(setDataPath, filename)  
+                    try:
+                        if os.path.isfile(fileNamePath_full) or os.path.islink(fileNamePath_full):
+                            os.remove(fileNamePath_full)
+                    except Exception as e:
+                        print(f"Failed to delete {fileNamePath_full}. Reason: {e}")
+                
             print("Stage 5 of conversion complete.")
 
+    #Format files:
     bidsPath = os.path.join(basePath, "bids_dataset")
     fileFormatter(bidsPath)      
+    
+    if keepSetFiles == "no": #If not keeping set files, delete the folder they were kept in
+        setDataPath = os.path.join(basePath, 'EEG Set Files (Unprocessed)')
+        Path(setDataPath).rmdir()
+        
     print("Stage 6 of conversion complete.")
     
     #Stage 7- OPTIONAL:
@@ -257,7 +324,7 @@ def poly52bids_fullConv(subjects, filterBufferPeriod, basePath, eeglabPath, proc
         print(f"Copied sourcedata into bids_path.")
         print("Stage 7 of conversion complete.")
     elif sourcedataTransfer == "move":
-        sourcedataPath = basePath + "/sourcedata"
+        sourcedataPath = os.path.join(basePath, "sourcedata")
         shutil.move(sourcedataPath, bidsPath)
         print(f"Moved sourcedata into bids_path.")
         print("Stage 7 of conversion complete.")        

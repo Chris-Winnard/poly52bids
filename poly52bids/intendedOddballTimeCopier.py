@@ -2,10 +2,10 @@ import os
 import shutil
 
 def intendedOddballTimeCopier(basePath,participantNumber):
-    originalFilePath = basePath + 'sourcedata/P' + participantNumber + '/Oddball Start Times.txt'
+    originalFilePath = basePath + '/sourcedata/P' + participantNumber + '/Oddball Start Times.txt'
     
     #Convert e.g., "P01" to BIDS format "sub-01"
-    target_participant_path = basePath + f"bids_dataset/sub-{participantNumber}/eeg/"
+    target_participant_path = basePath + f"/bids_dataset/sub-{participantNumber}/eeg/"
     
     #New file name in BIDS format
     new_filename = f"sub-{participantNumber}_attnMultInstOBs_intendedOBonsets.txt"

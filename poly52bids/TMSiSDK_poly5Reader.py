@@ -157,5 +157,4 @@ class Channel:
         self.cache_offset = cache_offset        
         
 if __name__ == "__main__":
-
     data=Poly5Reader()

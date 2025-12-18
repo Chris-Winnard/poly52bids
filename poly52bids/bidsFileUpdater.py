@@ -11,8 +11,8 @@ import pathlib
 currentFolderPath = pathlib.Path(__file__).parent.resolve()
 basePath =  str(currentFolderPath.parent.resolve()) + "\\"
 
-src_base = basePath + "bids_dataset"
-dst_base = basePath + "bids_dataset_OG"
+src_base = basePath + "\bids_dataset"
+dst_base = basePath + "\bids_dataset_OG"
 
 # Walk through the source directory
 for root, _, files in os.walk(src_base):
