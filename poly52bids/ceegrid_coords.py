@@ -1,6 +1,5 @@
 import numpy as np
 import mne
-import matplotlib.pyplot as plt
 
 def montage(sfreq_in):
 
@@ -104,16 +103,8 @@ def montage(sfreq_in):
     #Convert to a dictionary
     channel_positions = {key: value for key, value in zip(keys, values)}
     
-    #print(channel_positions)
-    
     #Set the electrode locations
     info.set_montage(mne.channels.make_dig_montage(ch_pos=channel_positions))
     
-    
-    #Plot the montage in 3D
-    #mne.viz.plot_sensors(info, kind='3d', title='cEEGrid Approx Electrode Locations')
-    #fig, ax = plt.subplots()
-    #mne.viz.plot_topomap(montage=montage_1020, show_names=True, axes=ax)
-    #Try to export it?
-    
+
     return info
