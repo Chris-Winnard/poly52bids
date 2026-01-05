@@ -1,4 +1,3 @@
-import matplotlib as plt
 import os
 import numpy as np
 
@@ -152,7 +151,6 @@ class SerialTriggerDecoder:
                 new_change = np.zeros((2,1), np.int16)
                 counts = np.concatenate((counts,new_change), axis=1)
             counts[self.__trigger[i], counts.shape[1]-1]+=1
-        plt.plot(self.__trigger)
         bit_pattern = ''
         numOfChange = counts.shape[1]
         event_started = False
@@ -262,3 +260,4 @@ class SerialTriggerDecoder:
 
     def generateTrialTrigger():
         print("Re-generating trigger ...")
+
