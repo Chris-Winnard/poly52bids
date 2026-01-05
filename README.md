@@ -2,9 +2,7 @@
 
 - EEGLAB (tested with v2023.0)
 - MATLAB (tested with R2023b)
-- MATLAB Engine for Python
-- Matplotlib-base (tested with v3.8.4)
-- Matplotlib-inline (tested with v0.17)
+- MATLAB Engine for Python (tested with 23.2.3)
 - MNE-Python (tested with v1.7.0)
 - MNE-BIDS (tested with v0.14)
 - NumPy (tested with v1.26.4)
@@ -34,3 +32,4 @@ Various files were added into the dataset manually, such as 'dataset_notes.xlsx'
 
 
 The 'behFileCleaner' function has been observed to fail sometimes when the dataset is saved to OneDrive, due to sync conflicts. We recommend pausing syncing before running the code, to avoid this.
+
